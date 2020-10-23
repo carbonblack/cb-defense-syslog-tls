@@ -155,7 +155,7 @@ def verify_config_parse_servers():
 
     output_format = config.get('general', 'output_format').lower()
 
-    if not output_format == 'cef' and not output_format == 'json' and output_format == 'leef':
+    if not output_format == 'cef' and not output_format == 'json' and not output_format == 'leef':
         logger.error('invalid output_format type was specified')
         logger.error('Must specify JSON, CEF , or LEEF output format')
         logger.warn('Setting output format to CEF')
@@ -374,6 +374,8 @@ def send_data_syslog(log_messages, back_up_dir):
 
         if not hash:
             logger.error("We were unable to store notifications.")
+        """
+        Disable sending and deleting of the notification file
 
         if send_syslog_tls(output_params['output_host'],
                            output_params['output_port'],
@@ -385,16 +387,12 @@ def send_data_syslog(log_messages, back_up_dir):
             # If successful send, then we just delete the stored version
             #
             delete_stored_data(hash, back_up_dir)
+        """
 
     if log_messages is None:
-        logger.info("There are no messages to forward to host")
-    elif output_params['output_port']:
-        logger.info("Sending {0} messages to {1}:{2}".format(len(log_messages),
-                                                             output_params['output_host'],
-                                                             output_params['output_port']))
+        logger.info("There are no messages to write to {}".format(back_up_dir))
     else:
-        logger.info("Sending {0} messages to {1}".format(len(log_messages),
-                                                         output_params['output_host']))
+        logger.info("Writing {0} messages to {1}".format(len(log_messages), back_up_dir))
 
     if log_messages is not None:
         #
@@ -433,7 +431,9 @@ def main():
 
     # # Store Forward.  Attempt to send messages that have been saved but we were unable to reach the destination
     back_up_dir = output_params['back_up_dir']
-    send_stored_data(back_up_dir)
+
+    # Disable Sending Backup
+    # send_stored_data(back_up_dir)
 
     # Error or not, there is nothing to do
     if len(server_list) == 0:
@@ -495,4 +495,3 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(e, exc_info=True)
         sys.exit(-1)
-
